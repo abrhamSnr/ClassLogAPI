@@ -1,6 +1,6 @@
 const User = require('../models/user');
 
-const getAllUsers = async (req, res) => {
+const getAllUsers = async (req, res, next) => {
   try {
     const user = await User.find();
     res.status(200).json({
@@ -12,7 +12,7 @@ const getAllUsers = async (req, res) => {
   }
 };
 
-const registerUser = async (req, res) => {
+const registerUser = async (req, res, next) => {
   try {
     const user = await User(req.body);
     await user.save();
@@ -24,7 +24,7 @@ const registerUser = async (req, res) => {
   }
 };
 
-const getUser = async (req, res) => {
+const getUser = async (req, res, next) => {
   try {
     const { id } = req.params;
     const user = await User.findById(id);
@@ -42,7 +42,7 @@ const getUser = async (req, res) => {
   }
 };
 
-const updateUser = async (req, res) => {
+const updateUser = async (req, res, next) => {
   try {
     const { id } = req.params;
     const updatedData = req.body;
@@ -66,7 +66,7 @@ const updateUser = async (req, res) => {
   }
 };
 
-const deleteUser = async (req, res) => {
+const deleteUser = async (req, res, next) => {
   try {
     const { id } = req.params;
 
