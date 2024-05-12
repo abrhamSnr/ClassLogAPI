@@ -24,7 +24,10 @@ const userSchema = mongoose.Schema({
     type: Number,
     required: [true, 'Please choose the role'],
     enum: [0, 1]
-  }
+  },
+  forgetPwdToken: String,
+  tokenCreatedAt: Date,
+  tokenExpiredAt: Date
 });
 
 //Comapre and hash passowrd and check if email is same format
@@ -35,7 +38,7 @@ userSchema.pre('save', async function(next) {
     }
     if (this.password === this.confirmPassword) {
       if (this.password.length < 8) {
-        return next(new Error('Password should be more than 8 characters'));
+        throw next(new Error('Password should be more than 8 characters'));
       }
       const hashedPassword = await bcrypt.hash(
         this.password,
@@ -48,11 +51,11 @@ userSchema.pre('save', async function(next) {
       this.password = hashedPassword;
       this.confirmPassword = hashedConfirmPassword;
     } else {
-      return next(new Error('Check your password'));
+      throw next(new Error('Check your password'));
     }
     next();
   } catch (err) {
-    return next(new Error('User not successfully created'));
+    throw next(new Error('User not successfully created'));
   }
 });
 
