@@ -96,7 +96,7 @@ const requestPwdReset = async (req, res, next) => {
       runValidators: true
     });
 
-    const resetLink = `${process.env.BASE_URL}/api/v1/user/passwordReset?token=${resetToken}&id=${user._id}`;
+    const resetLink = `${process.env.BASE_URL}/api/v1/user/passwordReset?key=${resetToken}&id=${user._id}`;
     sendEmail(
       user.email,
       'Password Reset Request',
@@ -107,6 +107,34 @@ const requestPwdReset = async (req, res, next) => {
     res.status(200).json({
       message:
         'Please check your email for a message with your link to reset password'
+    });
+  } catch (err) {
+    res.status(400).json({
+      message: err.message
+    });
+  }
+};
+
+const resetPassword = async (req, res, next) => {
+  try {
+    const { password, confirmPassword } = req.body;
+    const { key, id } = req.query;
+
+    if (!password || !confirmPassword)
+      throw new Error('Please insert all the fields');
+
+    const user = await User.findById(id);
+
+    if (Date.now() > user.tokenExpiredAt) throw new Error('Reset link expired');
+
+    const checkedToken = await bcrypt.compare(key, user.forgetPwdToken);
+    if (!checkedToken) throw new Error('Token is invalid');
+
+    user.password = password;
+    user.confirmPassword = confirmPassword;
+    user.save();
+    res.status(400).json({
+      message: 'Password reset succesfully'
     });
   } catch (err) {
     res.status(400).json({
@@ -131,4 +159,10 @@ const adminAuth = async (req, res, next) => {
   }
 };
 
-module.exports = { registerUser, loginUser, adminAuth, requestPwdReset };
+module.exports = {
+  registerUser,
+  loginUser,
+  adminAuth,
+  requestPwdReset,
+  resetPassword
+};
