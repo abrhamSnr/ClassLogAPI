@@ -6,7 +6,7 @@ const authUser = require('../controllers/authUser');
 
 router
   .route('/')
-  .get(authUser.adminAuth, User.getAllUsers)
+  .get(authUser.userAuth, User.getAllUsers)
   .post(User.registerUser);
 router
   .route('/:id')

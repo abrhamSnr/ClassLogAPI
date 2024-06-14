@@ -143,13 +143,21 @@ const resetPassword = async (req, res, next) => {
   }
 };
 
-const adminAuth = async (req, res, next) => {
+const userAuth = async (req, res, next) => {
   try {
     if (!req.headers.cookie) throw new Error('Not Authorized');
 
     const token = req.headers.cookie.replace('jwt=', '');
     const decodeToken = await jwt.verify(token, process.env.JWT_SECRET);
-    if (decodeToken.role !== 1) throw new Error('Not Authorized');
+
+    if (!decodeToken) throw new Error('Not Authorized');
+
+    req.user = {
+      id: decodeToken.id,
+      firstName: decodeToken.firstName,
+      lastName: decodeToken.lastName,
+      role: decodeToken.role
+    };
 
     next();
   } catch (err) {
@@ -162,7 +170,7 @@ const adminAuth = async (req, res, next) => {
 module.exports = {
   registerUser,
   loginUser,
-  adminAuth,
+  userAuth,
   requestPwdReset,
   resetPassword
 };
