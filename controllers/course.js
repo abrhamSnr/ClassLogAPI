@@ -47,9 +47,10 @@ const registerToCourse = async (req, res, next) => {
     const courseByCourseCode = await Course.findOne({ courseCode });
     if (!courseByCourseCode) throw new Error('Course not exist');
 
-    /**
-     * Make user the student register the class before, if student already exist show error
-     */
+    const checkIdInArray = await Course.find({ students: { $in: [id] } });
+    //If there is no value in the array,the upper method will give an empty array
+    if (checkIdInArray.length > 0)
+      throw new Error('Student already resgisterd');
 
     await Course.updateOne(
       { courseCode: courseCode },
@@ -77,7 +78,9 @@ const getAllStudentsInCourse = async (req, res, next) => {
     const allStudents = [];
 
     if (id !== course.instructor.toString())
-      throw new Error('Not Authorized to perform this task');
+      throw new Error(
+        'Not Authorized to perform this task, instructor does not match'
+      );
 
     for (let i = 0; i < course.students.length; i += 1) {
       const student = await User.findById(course.students[i]);
@@ -97,8 +100,39 @@ const getAllStudentsInCourse = async (req, res, next) => {
   }
 };
 
+const getCourseInfo = async (req, res, next) => {
+  try {
+    const courseId = req.params.id;
+    const { id, role } = req.user;
+    const course = await Course.findById(courseId);
+
+    if (role === 1) {
+      if (id !== course.instructor.toString())
+        throw new Error('Instructor not Authorized');
+    }
+    if (role === 0) {
+      const checkStudent = await Course.find({ student: { $in: [id] } });
+      if (checkStudent.length <= 0) throw new Error('Student not authorized');
+    }
+    res.status(200).json({
+      value: [
+        {
+          course: course.courseName,
+          startDate: course.courseStartDate,
+          endDate: course.courseEndDate
+        }
+      ]
+    });
+  } catch (err) {
+    res.status(400).json({
+      message: err.message
+    });
+  }
+};
+
 module.exports = {
   registerCourse,
   registerToCourse,
-  getAllStudentsInCourse
+  getAllStudentsInCourse,
+  getCourseInfo
 };
