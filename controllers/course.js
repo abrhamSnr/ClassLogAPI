@@ -27,6 +27,7 @@ const registerCourse = async (req, res, next) => {
     await courseRegisterd.save();
     res.status(200).json({
       id: courseCode,
+      courseSessionId: courseRegisterd._id,
       message: 'Class created'
     });
   } catch (err) {
@@ -47,10 +48,10 @@ const registerToCourse = async (req, res, next) => {
     const courseByCourseCode = await Course.findOne({ courseCode });
     if (!courseByCourseCode) throw new Error('Course not exist');
 
-    const checkIdInArray = await Course.find({ students: { $in: [id] } });
-    //If there is no value in the array,the upper method will give an empty array
-    if (checkIdInArray.length > 0)
-      throw new Error('Student already resgisterd');
+    for (let i = 0; i < courseByCourseCode.students.length; i += 1) {
+      if (id === courseByCourseCode.students[i].toString())
+        throw new Error('Student already in class');
+    }
 
     await Course.updateOne(
       { courseCode: courseCode },
@@ -58,6 +59,7 @@ const registerToCourse = async (req, res, next) => {
     );
 
     res.status(200).json({
+      courseSessionId: courseByCourseCode._id,
       message: 'Class registerd'
     });
   } catch (err) {
@@ -85,6 +87,7 @@ const getAllStudentsInCourse = async (req, res, next) => {
     for (let i = 0; i < course.students.length; i += 1) {
       const student = await User.findById(course.students[i]);
       allStudents.push({
+        studentId: student._id,
         firstName: student.firstName,
         lastName: student.lastName,
         email: student.email
@@ -105,18 +108,24 @@ const getCourseInfo = async (req, res, next) => {
     const courseId = req.params.id;
     const { id, role } = req.user;
     const course = await Course.findById(courseId);
+    let checkStudentInClass = false;
 
     if (role === 1) {
       if (id !== course.instructor.toString())
         throw new Error('Instructor not Authorized');
     }
     if (role === 0) {
-      const checkStudent = await Course.find({ student: { $in: [id] } });
-      if (checkStudent.length <= 0) throw new Error('Student not authorized');
+      for (let i = 0; i < course.students.length; i += 1) {
+        if (id === course.students[i].toString()) {
+          checkStudentInClass = true;
+        }
+      }
     }
+    if (checkStudentInClass) throw new Error('Student not authorized');
     res.status(200).json({
       value: [
         {
+          courseSessionId: course._id,
           course: course.courseName,
           startDate: course.courseStartDate,
           endDate: course.courseEndDate
@@ -130,9 +139,54 @@ const getCourseInfo = async (req, res, next) => {
   }
 };
 
+const getAllCoursesInfo = async (req, res, next) => {
+  try {
+    const { id, role } = req.user;
+    const allCourses = await Course.find();
+    const courses = [];
+    for (let i = 0; i < allCourses.length; i += 1) {
+      if (role === 1) {
+        if (id === allCourses[i].instructor.toString()) {
+          courses.push({
+            courseSessionId: allCourses[i]._id,
+            courseName: allCourses[i].courseName,
+            courseStartDate: allCourses[i].courseStartDate,
+            courseEndDate: allCourses[i].courseEndDate,
+            instructorId: allCourses[i].instructor,
+            studentsId: allCourses[i].students
+          });
+        }
+      }
+      if (role === 0) {
+        for (let j = 0; j < allCourses[i].students.length; j += 1) {
+          if (id === allCourses[i].students[j].toString()) {
+            courses.push({
+              courseSessionId: allCourses[i]._id,
+              courseName: allCourses[i].courseName,
+              courseStartDate: allCourses[i].courseStartDate,
+              courseEndDate: allCourses[i].courseEndDate,
+              instructorId: allCourses[i].instructor
+            });
+          }
+        }
+      }
+    }
+
+    if (courses.length === 0) throw new Error('No class listed');
+    res.status(200).json({
+      courses
+    });
+  } catch (err) {
+    res.status(400).json({
+      message: err.message
+    });
+  }
+};
+
 module.exports = {
   registerCourse,
   registerToCourse,
   getAllStudentsInCourse,
-  getCourseInfo
+  getCourseInfo,
+  getAllCoursesInfo
 };
