@@ -15,6 +15,10 @@ const testSchema = mongoose.Schema({
     type: Buffer,
     required: [true, 'Please eneter upload test questions']
   },
+  testFileType: {
+    type: String,
+    required: true
+  },
   courseId: { type: mongoose.Schema.Types.ObjectId, ref: 'Course' }
 });
 

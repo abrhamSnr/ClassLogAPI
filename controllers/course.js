@@ -87,6 +87,7 @@ const getAllStudentsInCourse = async (req, res, next) => {
     for (let i = 0; i < course.students.length; i += 1) {
       const student = await User.findById(course.students[i]);
       allStudents.push({
+        courseSessionId: courseId,
         studentId: student._id,
         firstName: student.firstName,
         lastName: student.lastName,
