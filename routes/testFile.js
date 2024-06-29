@@ -11,7 +11,7 @@ router
 router.route('/getAllTests/:id').get(authUser.userAuth, test.getAllTestFiles);
 router
   .route('/getTest/:courseid/:testid')
-  .get(authUser.userAuth, test.getTestfile);
+  .get(authUser.userAuth, test.readTestfile);
 router
   .route('/updateTest/:courseid/:testid')
   .put(authUser.userAuth, test.updateTestFileDate);

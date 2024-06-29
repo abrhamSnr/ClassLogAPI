@@ -56,7 +56,7 @@ const getAllTestFiles = async (req, res, next) => {
   }
 };
 
-const getTestfile = async (req, res, next) => {
+const readTestfile = async (req, res, next) => {
   try {
     const testId = req.params.testid;
     const courseId = req.params.courseid;
@@ -111,6 +111,6 @@ const updateTestFileDate = async (req, res, next) => {
 module.exports = {
   creatTestFile,
   getAllTestFiles,
-  getTestfile,
+  readTestfile,
   updateTestFileDate
 };

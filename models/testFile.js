@@ -13,7 +13,7 @@ const testSchema = mongoose.Schema({
   testEndDate: { type: Date, required: [true, 'Please eneter test end date'] },
   testQuestions: {
     type: Buffer,
-    required: [true, 'Please eneter upload test questions']
+    required: [true, 'Please upload test questions']
   },
   testFileType: {
     type: String,
