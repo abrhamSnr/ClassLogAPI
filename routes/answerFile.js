@@ -9,7 +9,7 @@ router
   .route('/createAnswer/:testId')
   .post(authUser.userAuth, upload.single('file'), answerFile.createAnsFile);
 router
-  .route('/getAnswer/:testId')
+  .route('/getAnswer/:testId/:answerId')
   .get(authUser.userAuth, answerFile.readAnsFile);
 router
   .route('/deleteAnswer/:answerId')

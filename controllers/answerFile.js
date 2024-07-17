@@ -26,9 +26,10 @@ const createAnsFile = async (req, res, next) => {
 const readAnsFile = async (req, res, next) => {
   try {
     const { testId } = req.params;
+    const { answerId } = req.params;
     const { id, role } = req.user;
     if (role !== 1) throw new Error('Not Authorized');
-    const answerFile = await Answer.findOne({ testId: testId });
+    const answerFile = await Answer.findOne({ _id: answerId, testId: testId });
     if (!answerFile) throw new Error('File does not exist');
     res.setHeader(
       'Content-Diposition',
