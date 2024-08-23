@@ -2,10 +2,11 @@ const express = require('express');
 
 const router = express.Router();
 const User = require('../controllers/user');
+const authUser = require('../controllers/authUser');
 
 router
   .route('/')
-  .get(User.getAllUsers)
+  .get(authUser.userAuth, User.getAllUsers)
   .post(User.registerUser);
 router
   .route('/:id')
